@@ -15,21 +15,8 @@
             app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <Button
-            android:id="@+id/makeGuessButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:textColor="@android:color/white"
-            android:text="@string/make_guess"
-            android:translationZ="12dp"
-            android:stateListAnimator="@null"
-            android:background="@drawable/make_guess_button_background"
-            app:layout_constraintBottom_toBottomOf="@+id/mapContainerCard"
-            app:layout_constraintStart_toStartOf="@+id/mapContainerCard"
-            app:layout_constraintEnd_toEndOf="@+id/mapContainerCard"/>
-
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="@dimen/small_map_width"
             android:layout_height="@dimen/small_map_height"
             app:cardCornerRadius="@dimen/map_corner_radius"
@@ -47,7 +34,7 @@
                 android:id="@+id/mapFragmentContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <ImageButton
             android:id="@+id/expandButton"
@@ -69,6 +56,22 @@
             android:src="@drawable/ic_close_black_24dp"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:contentDescription="TODO" app:layout_constraintTop_toTopOf="@+id/mapContainerCard"
+            app:layout_constraintEnd_toEndOf="@+id/mapContainerCard"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/makeGuessButton"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:insetBottom="0dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:textColor="@android:color/white"
+            android:text="@string/make_guess"
+            android:translationZ="8dp"
+            android:stateListAnimator="@null"
+            app:cornerRadius="@dimen/map_corner_radius"
+            app:layout_constraintBottom_toBottomOf="@+id/mapContainerCard"
+            app:layout_constraintStart_toStartOf="@+id/mapContainerCard"
             app:layout_constraintEnd_toEndOf="@+id/mapContainerCard"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

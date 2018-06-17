@@ -64,9 +64,7 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     private var streetViewPanorama: StreetViewPanorama? = null
     private val gameData = DataUtils.generateSampleGameData()
     private var currentRound: Int = 0
-    private val isSmallMap: Boolean = false
     private var selectedPosition: LatLng? = null
-
     private var cardState: MapCardState = MapCardState.SMALL
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -174,20 +172,23 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
 
     private fun setMapCardState(cardState: MapCardState) {
         val layoutParams = mapContainerCard.layoutParams
+        val height: Int
+        val width: Int
         when (cardState) {
             MapCardState.EXPANDED -> {
-                layoutParams.height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
-                layoutParams.width = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
+                height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
+                width = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
             }
             MapCardState.SMALL -> {
-                val height = resources.getDimensionPixelSize(R.dimen.small_map_height)
-                val width = resources.getDimensionPixelSize(R.dimen.small_map_width)
-                layoutParams.height = height
-                layoutParams.width = width
+                height = resources.getDimensionPixelSize(R.dimen.small_map_height)
+                width = resources.getDimensionPixelSize(R.dimen.small_map_width)
             }
         }
 
+        layoutParams.height = height
+        layoutParams.width = width
         mapContainerCard.layoutParams = layoutParams
+
         mapContainerCard.radius = resources.getDimensionPixelSize(R.dimen.map_corner_radius).toFloat()
         mapContainerCard.visibility = View.VISIBLE
         this.cardState = cardState
@@ -237,20 +238,6 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
         transaction.replace(id, fragment)
-        transaction.commit()
-    }
-
-    private fun showMapFragment() {
-        mapFragment.getMapAsync(this)
-        val fragmentManager = supportFragmentManager
-        val transaction = fragmentManager.beginTransaction()
-        transaction.show(mapFragment)
-        transaction.commit()
-    }
-
-    private fun hideMapFragment() {
-        val transaction = supportFragmentManager.beginTransaction()
-        transaction.hide(mapFragment)
         transaction.commit()
     }
 
