@@ -4,10 +4,13 @@ import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.FloatingActionButton
+import android.support.constraint.ConstraintLayout
+import android.transition.Scene
 import android.support.v4.app.Fragment
 import android.support.v4.app.NavUtils
 import android.support.v7.app.AppCompatActivity
+import android.transition.ChangeBounds
+import android.transition.TransitionManager
 import android.view.MenuItem
 import android.view.View
 import com.bagadi.apps.guesswhere.R
@@ -16,6 +19,7 @@ import com.bagadi.apps.guesswhere.util.MapUtils
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.android.synthetic.main.activity_game.*
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -23,26 +27,25 @@ import com.google.android.gms.maps.model.MarkerOptions
  */
 class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnMapReadyCallback {
     private val mHideHandler = Handler()
-    private var mContentView: View? = null
     private val mHidePart2Runnable = Runnable {
         // Delayed removal of status and navigation bar
 
         // Note that some of these constants are new as of API 16 (Jelly Bean)
         // and API 19 (KitKat). It is safe to use them, as they are inlined
         // at compile-time and do nothing on earlier devices.
-        mContentView!!.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
+        contentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
                 or View.SYSTEM_UI_FLAG_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
     }
-    private var mStreetMapToggleFab: FloatingActionButton? = null
     private val mShowPart2Runnable = Runnable {
         // Delayed display of UI elements
         val actionBar = supportActionBar
         actionBar?.show()
     }
+
     private var mVisible: Boolean = false
     private val mHideRunnable = Runnable { hide() }
 
@@ -67,35 +70,71 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     private val mIsSmallMap: Boolean = false
     private var mSelectedPosition: LatLng? = null
 
+    private var cardState: MapCardState = MapCardState.SMALL
+
     private val currentFragment: Fragment
         get() {
             val fragmentManager = supportFragmentManager
-            return fragmentManager.findFragmentById(R.id.street_view_fragment_container)
+            return fragmentManager.findFragmentById(R.id.mainFragmentContainer)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_game)
+
         val actionBar = supportActionBar
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
         mVisible = true
-        mStreetMapToggleFab = findViewById<View>(R.id.street_map_toggle_fab) as FloatingActionButton
-        mContentView = findViewById(R.id.fullscreen_content)
 
-        mStreetMapToggleFab!!.setOnClickListener {
-            //                startNextRound();
+        makeGuessButton.bringToFront()
 
-            if (mMapFragment!!.isHidden) {
-                showMapFragment()
+        showMapFab.setOnClickListener {
+            // TODO: Make this a circular reveal
+            TransitionManager.beginDelayedTransition(contentView)
+            setMapCardState(cardState)
+            it.visibility = View.GONE
+            makeGuessButton.visibility = View.VISIBLE
+            expandButton.visibility = View.VISIBLE
+            closeButton.visibility = View.VISIBLE
+        }
+
+        closeButton.setOnClickListener {
+            // FixMe: The animation is a little zanky when closing from full size.
+            val transition = ChangeBounds()
+            transition.addTarget(mapContainerCard)
+
+            TransitionManager.beginDelayedTransition(contentView, transition)
+            val fabSize = resources.getDimensionPixelSize(R.dimen.design_fab_size_normal)
+            mapContainerCard.layoutParams.height = fabSize
+            mapContainerCard.layoutParams.width = fabSize
+            mapContainerCard.radius = fabSize / 2.0f
+            mapContainerCard.requestLayout()
+            makeGuessButton.visibility = View.GONE
+            expandButton.visibility = View.GONE
+            closeButton.visibility = View.GONE
+            showMapFab.visibility = View.VISIBLE
+        }
+
+        expandButton.setOnClickListener {
+            TransitionManager.beginDelayedTransition(contentView)
+            if (cardState == MapCardState.EXPANDED) {
+                // FixMe: The animation is zanky when switching to small card state.
+                setMapCardState(MapCardState.SMALL)
             } else {
-                hideMapFragment()
+                setMapCardState(MapCardState.EXPANDED)
             }
         }
 
+        makeGuessButton.setOnClickListener {
+            // TODO: Animate the map / FAB out of the view.
+
+            // TODO: Create better scene transition.`
+        }
+
         // Set up the user interaction to manually show or hide the system UI.
-        mContentView!!.setOnClickListener { toggle() }
+        contentView.setOnClickListener { toggle() }
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
@@ -105,20 +144,20 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         val panoramaOptions = StreetViewPanoramaOptions().streetNamesEnabled(false)
 
         mStreetViewPanoramaFragment = SupportStreetViewPanoramaFragment.newInstance(panoramaOptions)
-        mStreetViewPanoramaFragment!!.getStreetViewPanoramaAsync(this@GameActivity)
-        mStreetViewPanoramaFragment!!.retainInstance = true
+        mStreetViewPanoramaFragment.getStreetViewPanoramaAsync(this@GameActivity)
+        mStreetViewPanoramaFragment.retainInstance = true
 
-        replaceFragment(mStreetViewPanoramaFragment!!, R.id.street_view_fragment_container)
+        replaceFragment(mStreetViewPanoramaFragment, R.id.mainFragmentContainer)
 
         val options = GoogleMapOptions()
         options.rotateGesturesEnabled(false).tiltGesturesEnabled(false)
 
         mMapFragment = SupportMapFragment.newInstance(options)
         //        hideMapFragment();
-        mMapFragment!!.getMapAsync(this)
-        mMapFragment!!.retainInstance = true
+        mMapFragment.getMapAsync(this)
+        mMapFragment.retainInstance = true
 
-        replaceFragment(mMapFragment!!, R.id.map_fragment_container)
+        replaceFragment(mMapFragment, R.id.mapFragmentContainer)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -138,6 +177,26 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun setMapCardState(cardState: MapCardState) {
+        when (cardState) {
+            MapCardState.EXPANDED -> {
+                mapContainerCard.layoutParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT
+                mapContainerCard.layoutParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+            }
+            MapCardState.SMALL -> {
+                val height = resources.getDimensionPixelSize(R.dimen.small_map_height)
+                val width = resources.getDimensionPixelSize(R.dimen.small_map_width)
+                mapContainerCard.layoutParams.height = height
+                mapContainerCard.layoutParams.width = width
+            }
+        }
+
+        contentView.requestLayout()
+        mapContainerCard.radius = resources.getDimensionPixelSize(R.dimen.map_corner_radius).toFloat()
+        mapContainerCard.visibility = View.VISIBLE
+        this.cardState = cardState
     }
 
     private fun toggle() {
@@ -163,7 +222,7 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     @SuppressLint("InlinedApi")
     private fun show() {
         // Show the system bar
-        mContentView!!.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        contentView!!.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         mVisible = true
 
         // Schedule a runnable to display UI elements after a delay
@@ -188,11 +247,10 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     }
 
     private fun showMapFragment() {
-        mMapFragment!!.getMapAsync(this)
+        mMapFragment.getMapAsync(this)
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
         transaction.show(mMapFragment)
-        mStreetMapToggleFab!!.setImageResource(R.drawable.ic_streetview_white_24px)
         transaction.commit()
     }
 
@@ -200,7 +258,6 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
         transaction.hide(mMapFragment)
-        mStreetMapToggleFab!!.setImageResource(R.drawable.ic_map_white_24dp)
         transaction.commit()
     }
 
@@ -238,6 +295,14 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
             googleMap.clear()
             googleMap.addMarker(MarkerOptions().position(latLng))
         }
+        googleMap.uiSettings.isRotateGesturesEnabled = false
+        googleMap.uiSettings.isTiltGesturesEnabled = false
+        googleMap.uiSettings.isMapToolbarEnabled = false
+    }
+
+    enum class MapCardState {
+        EXPANDED,
+        SMALL
     }
 
     companion object {

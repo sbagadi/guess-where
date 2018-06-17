@@ -1,40 +1,84 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fullscreen_content"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#0099cc"
-    tools:context="com.bagadi.apps.guesswhere.ui.GameActivity">
+<android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/contentView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0099cc"
+        tools:context="com.bagadi.apps.guesswhere.ui.GameActivity">
 
     <FrameLayout
-        android:id="@+id/street_view_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+            android:id="@+id/mainFragmentContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+            android:id="@+id/makeGuessButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:textColor="@android:color/white"
+            android:text="@string/make_guess"
+            android:translationZ="12dp"
+            android:stateListAnimator="@null"
+            android:background="@drawable/make_guess_button_background"
+            app:layout_constraintBottom_toBottomOf="@+id/mapContainerCard"
+            app:layout_constraintStart_toStartOf="@+id/mapContainerCard"
+            app:layout_constraintEnd_toEndOf="@+id/mapContainerCard"/>
 
     <android.support.v7.widget.CardView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        app:cardPreventCornerOverlap="true">
+            android:layout_width="@dimen/small_map_width"
+            android:layout_height="@dimen/small_map_height"
+            app:cardCornerRadius="@dimen/map_corner_radius"
+            app:cardElevation="8dp"
+            app:cardPreventCornerOverlap="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="24dp" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginBottom="24dp"
+            android:id="@+id/mapContainerCard" android:layout_marginStart="24dp"
+            app:layout_constraintStart_toStartOf="@+id/mainFragmentContainer"
+            app:layout_constraintHorizontal_bias="1.0" android:layout_marginTop="24dp"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="1.0">
 
         <FrameLayout
-            android:id="@+id/map_fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+                android:id="@+id/mapFragmentContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
     </android.support.v7.widget.CardView>
 
+    <ImageButton
+            android:id="@+id/expandButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:translationZ="8dp"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:src="@drawable/ic_arrow_expand_24dp"
+            android:contentDescription="TODO"
+            app:layout_constraintStart_toStartOf="@+id/mapContainerCard"
+            app:layout_constraintTop_toTopOf="@+id/mapContainerCard"/>
+
+    <ImageButton
+            android:id="@+id/closeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end"
+            android:translationZ="8dp"
+            android:src="@drawable/ic_close_black_24dp"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:contentDescription="TODO" app:layout_constraintTop_toTopOf="@+id/mapContainerCard"
+            app:layout_constraintEnd_toEndOf="@+id/mapContainerCard"/>
+
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/street_map_toggle_fab"
-        style="?metaButtonBarButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_map_white_24dp"
-        android:fitsSystemWindows="true"
-        app:elevation="16dp"/>
-</FrameLayout>
+            android:id="@+id/showMapFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_map_white_24dp"
+            android:fitsSystemWindows="true"
+            app:elevation="16dp" android:layout_marginEnd="24dp"
+            app:layout_constraintEnd_toEndOf="@+id/mainFragmentContainer" android:layout_marginBottom="24dp"
+            app:layout_constraintBottom_toBottomOf="@+id/mainFragmentContainer" app:fabSize="normal"
+            android:visibility="gone"/>
+</android.support.constraint.ConstraintLayout>

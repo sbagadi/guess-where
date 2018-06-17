@@ -5,4 +5,6 @@
     <string name="title_activity_game">Guess Where</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="make_guess">Make Guess</string>
+    <style name="next_round">Next Round</style>
 </resources>
