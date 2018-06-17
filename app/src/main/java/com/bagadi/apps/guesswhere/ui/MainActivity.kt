@@ -2,9 +2,9 @@ package com.bagadi.apps.guesswhere.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        val fab = findViewById<View>(R.id.fab) as FloatingActionButton
+        val fab = findViewById<View>(R.id.fab) as com.google.android.material.floatingactionbutton.FloatingActionButton
         fab.setOnClickListener { startActivity(Intent(this@MainActivity, GameActivity::class.java)) }
 
         val fragmentManager = supportFragmentManager

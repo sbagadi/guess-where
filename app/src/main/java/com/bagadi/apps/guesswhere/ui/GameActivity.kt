@@ -4,11 +4,11 @@ import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
-import android.support.constraint.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import android.transition.Scene
-import android.support.v4.app.Fragment
-import android.support.v4.app.NavUtils
-import android.support.v7.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.core.app.NavUtils
+import androidx.appcompat.app.AppCompatActivity
 import android.transition.ChangeBounds
 import android.transition.TransitionManager
 import android.view.MenuItem
@@ -72,12 +72,6 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
 
     private var cardState: MapCardState = MapCardState.SMALL
 
-    private val currentFragment: Fragment
-        get() {
-            val fragmentManager = supportFragmentManager
-            return fragmentManager.findFragmentById(R.id.mainFragmentContainer)
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -107,13 +101,12 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
 
             TransitionManager.beginDelayedTransition(contentView, transition)
             val fabSize = resources.getDimensionPixelSize(R.dimen.design_fab_size_normal)
-            mapContainerCard.layoutParams.height = fabSize
-            mapContainerCard.layoutParams.width = fabSize
-            mapContainerCard.radius = fabSize / 2.0f
-            mapContainerCard.requestLayout()
             makeGuessButton.visibility = View.GONE
             expandButton.visibility = View.GONE
             closeButton.visibility = View.GONE
+            mapContainerCard.layoutParams.height = fabSize
+            mapContainerCard.layoutParams.width = fabSize
+            mapContainerCard.radius = fabSize / 2.0f
             showMapFab.visibility = View.VISIBLE
         }
 
@@ -182,8 +175,8 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     private fun setMapCardState(cardState: MapCardState) {
         when (cardState) {
             MapCardState.EXPANDED -> {
-                mapContainerCard.layoutParams.height = ConstraintLayout.LayoutParams.MATCH_PARENT
-                mapContainerCard.layoutParams.width = ConstraintLayout.LayoutParams.MATCH_PARENT
+                mapContainerCard.layoutParams.height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
+                mapContainerCard.layoutParams.width = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
             }
             MapCardState.SMALL -> {
                 val height = resources.getDimensionPixelSize(R.dimen.small_map_height)
@@ -239,7 +232,7 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         mHideHandler.postDelayed(mHideRunnable, delayMillis.toLong())
     }
 
-    private fun replaceFragment(fragment: Fragment, id: Int) {
+    private fun replaceFragment(fragment: androidx.fragment.app.Fragment, id: Int) {
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
         transaction.replace(id, fragment)
