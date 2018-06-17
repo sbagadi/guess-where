@@ -4,9 +4,6 @@ import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
-import androidx.constraintlayout.widget.ConstraintLayout
-import android.transition.Scene
-import androidx.fragment.app.Fragment
 import androidx.core.app.NavUtils
 import androidx.appcompat.app.AppCompatActivity
 import android.transition.ChangeBounds
@@ -26,8 +23,8 @@ import kotlinx.android.synthetic.main.activity_game.*
  * status bar and navigation/system bar) with user interaction.
  */
 class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnMapReadyCallback {
-    private val mHideHandler = Handler()
-    private val mHidePart2Runnable = Runnable {
+    private val hideHandler = Handler()
+    private val hidePart2Runnable = Runnable {
         // Delayed removal of status and navigation bar
 
         // Note that some of these constants are new as of API 16 (Jelly Bean)
@@ -40,35 +37,35 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)
     }
-    private val mShowPart2Runnable = Runnable {
+    private val showPart2Runnable = Runnable {
         // Delayed display of UI elements
         val actionBar = supportActionBar
         actionBar?.show()
     }
 
-    private var mVisible: Boolean = false
-    private val mHideRunnable = Runnable { hide() }
+    private var systemUiVisible: Boolean = false
+    private val hideRunnable = Runnable { hide() }
 
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
      * system UI. This is to prevent the jarring behavior of controls going away
      * while interacting with activity UI.
      */
-    private val mDelayHideTouchListener = View.OnTouchListener { view, motionEvent ->
+    private val delayHideTouchListener = View.OnTouchListener { view, motionEvent ->
         if (AUTO_HIDE) {
             delayedHide(AUTO_HIDE_DELAY_MILLIS)
         }
         false
     }
 
-    private lateinit var mStreetViewPanoramaFragment: SupportStreetViewPanoramaFragment
-    private lateinit var mMapFragment: SupportMapFragment
+    private lateinit var streetViewPanoramaFragment: SupportStreetViewPanoramaFragment
+    private lateinit var mapFragment: SupportMapFragment
 
-    private var mStreetViewPanorama: StreetViewPanorama? = null
-    private val mGameData = DataUtils.generateSampleGameData()
-    private var mCurrentRound: Int = 0
-    private val mIsSmallMap: Boolean = false
-    private var mSelectedPosition: LatLng? = null
+    private var streetViewPanorama: StreetViewPanorama? = null
+    private val gameData = DataUtils.generateSampleGameData()
+    private var currentRound: Int = 0
+    private val isSmallMap: Boolean = false
+    private var selectedPosition: LatLng? = null
 
     private var cardState: MapCardState = MapCardState.SMALL
 
@@ -80,7 +77,7 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         val actionBar = supportActionBar
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        mVisible = true
+        systemUiVisible = true
 
         makeGuessButton.bringToFront()
 
@@ -104,9 +101,13 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
             makeGuessButton.visibility = View.GONE
             expandButton.visibility = View.GONE
             closeButton.visibility = View.GONE
-            mapContainerCard.layoutParams.height = fabSize
-            mapContainerCard.layoutParams.width = fabSize
+
+            val layoutParams = mapContainerCard.layoutParams
+            layoutParams.height = fabSize
+            layoutParams.width = fabSize
+            mapContainerCard.layoutParams = layoutParams
             mapContainerCard.radius = fabSize / 2.0f
+
             showMapFab.visibility = View.VISIBLE
         }
 
@@ -132,25 +133,24 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        //        mStreetMapToggleFab.setOnTouchListener(mDelayHideTouchListener);
+        //        mStreetMapToggleFab.setOnTouchListener(delayHideTouchListener);
 
         val panoramaOptions = StreetViewPanoramaOptions().streetNamesEnabled(false)
 
-        mStreetViewPanoramaFragment = SupportStreetViewPanoramaFragment.newInstance(panoramaOptions)
-        mStreetViewPanoramaFragment.getStreetViewPanoramaAsync(this@GameActivity)
-        mStreetViewPanoramaFragment.retainInstance = true
+        streetViewPanoramaFragment = SupportStreetViewPanoramaFragment.newInstance(panoramaOptions)
+        streetViewPanoramaFragment.getStreetViewPanoramaAsync(this@GameActivity)
+        streetViewPanoramaFragment.retainInstance = true
 
-        replaceFragment(mStreetViewPanoramaFragment, R.id.mainFragmentContainer)
+        replaceFragment(streetViewPanoramaFragment, R.id.mainFragmentContainer)
 
         val options = GoogleMapOptions()
         options.rotateGesturesEnabled(false).tiltGesturesEnabled(false)
 
-        mMapFragment = SupportMapFragment.newInstance(options)
-        //        hideMapFragment();
-        mMapFragment.getMapAsync(this)
-        mMapFragment.retainInstance = true
+        mapFragment = SupportMapFragment.newInstance(options)
+        mapFragment.getMapAsync(this)
+        mapFragment.retainInstance = true
 
-        replaceFragment(mMapFragment, R.id.mapFragmentContainer)
+        replaceFragment(mapFragment, R.id.mapFragmentContainer)
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -173,27 +173,28 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     }
 
     private fun setMapCardState(cardState: MapCardState) {
+        val layoutParams = mapContainerCard.layoutParams
         when (cardState) {
             MapCardState.EXPANDED -> {
-                mapContainerCard.layoutParams.height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
-                mapContainerCard.layoutParams.width = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
+                layoutParams.height = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
+                layoutParams.width = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
             }
             MapCardState.SMALL -> {
                 val height = resources.getDimensionPixelSize(R.dimen.small_map_height)
                 val width = resources.getDimensionPixelSize(R.dimen.small_map_width)
-                mapContainerCard.layoutParams.height = height
-                mapContainerCard.layoutParams.width = width
+                layoutParams.height = height
+                layoutParams.width = width
             }
         }
 
-        contentView.requestLayout()
+        mapContainerCard.layoutParams = layoutParams
         mapContainerCard.radius = resources.getDimensionPixelSize(R.dimen.map_corner_radius).toFloat()
         mapContainerCard.visibility = View.VISIBLE
         this.cardState = cardState
     }
 
     private fun toggle() {
-        if (mVisible) {
+        if (systemUiVisible) {
             hide()
         } else {
             show()
@@ -205,22 +206,22 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
         val actionBar = supportActionBar
         actionBar?.hide()
 
-        mVisible = false
+        systemUiVisible = false
 
         // Schedule a runnable to remove the status and navigation bar after a delay
-        mHideHandler.removeCallbacks(mShowPart2Runnable)
-        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY.toLong())
+        hideHandler.removeCallbacks(showPart2Runnable)
+        hideHandler.postDelayed(hidePart2Runnable, UI_ANIMATION_DELAY.toLong())
     }
 
     @SuppressLint("InlinedApi")
     private fun show() {
         // Show the system bar
         contentView!!.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        mVisible = true
+        systemUiVisible = true
 
         // Schedule a runnable to display UI elements after a delay
-        mHideHandler.removeCallbacks(mHidePart2Runnable)
-        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY.toLong())
+        hideHandler.removeCallbacks(hidePart2Runnable)
+        hideHandler.postDelayed(showPart2Runnable, UI_ANIMATION_DELAY.toLong())
     }
 
     /**
@@ -228,8 +229,8 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
      * previously scheduled calls.
      */
     private fun delayedHide(delayMillis: Int) {
-        mHideHandler.removeCallbacks(mHideRunnable)
-        mHideHandler.postDelayed(mHideRunnable, delayMillis.toLong())
+        hideHandler.removeCallbacks(hideRunnable)
+        hideHandler.postDelayed(hideRunnable, delayMillis.toLong())
     }
 
     private fun replaceFragment(fragment: androidx.fragment.app.Fragment, id: Int) {
@@ -240,47 +241,44 @@ class GameActivity : AppCompatActivity(), OnStreetViewPanoramaReadyCallback, OnM
     }
 
     private fun showMapFragment() {
-        mMapFragment.getMapAsync(this)
+        mapFragment.getMapAsync(this)
         val fragmentManager = supportFragmentManager
         val transaction = fragmentManager.beginTransaction()
-        transaction.show(mMapFragment)
+        transaction.show(mapFragment)
         transaction.commit()
     }
 
     private fun hideMapFragment() {
-        val fragmentManager = supportFragmentManager
-        val transaction = fragmentManager.beginTransaction()
-        transaction.hide(mMapFragment)
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.hide(mapFragment)
         transaction.commit()
     }
 
     private fun startNextRound() {
-        if (mCurrentRound < mGameData.numberOfRounds) {
-            mCurrentRound++
-            val roundData = mGameData.roundsList[mCurrentRound - 1]
+        if (currentRound < gameData.numberOfRounds) {
+            currentRound++
+            val roundData = gameData.roundsList[currentRound - 1]
 
-            if (mStreetViewPanorama != null) {
-                mStreetViewPanorama!!.setPosition(roundData.locationData.latLng)
-            }
+            streetViewPanorama?.setPosition(roundData.locationData.latLng)
         }
     }
 
     override fun onStreetViewPanoramaReady(streetViewPanorama: StreetViewPanorama) {
-        mStreetViewPanorama = streetViewPanorama
+        this.streetViewPanorama = streetViewPanorama
         startNextRound()
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         googleMap.setOnMapClickListener { latLng ->
-            val actualPosition = mGameData
-                    .roundsList[mCurrentRound - 1].locationData.latLng
-            mSelectedPosition = latLng
+            val actualPosition = gameData
+                    .roundsList[currentRound - 1].locationData.latLng
+            selectedPosition = latLng
             val result = FloatArray(1)
             Location.distanceBetween(
                     actualPosition.latitude,
                     actualPosition.longitude,
-                    mSelectedPosition!!.latitude,
-                    mSelectedPosition!!.longitude,
+                    selectedPosition!!.latitude,
+                    selectedPosition!!.longitude,
                     result)
 
             MapUtils.getAddressForLatLng(this@GameActivity, latLng)

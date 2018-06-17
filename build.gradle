@@ -4,7 +4,7 @@ buildscript {
     ext.versions = [
             'compileSdk'      : 28,
             'targetSdk'       : 28,
-            'kotlin'          : '1.2.41',
+            'kotlin'          : '1.2.50',
             'supportLibrary'  : '28.0.0-alpha3',
             'playServices'    : '15.0.1',
             'constraintLayout': '1.1.2'
